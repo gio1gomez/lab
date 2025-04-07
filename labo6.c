@@ -101,6 +101,15 @@ int main(void) {
     configurarUART();
     Motor_Init();
 
+
+    //inicio del nuevo cambio
+
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF));
+    GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1); // PF1 = LED rojo
+
+    //fin del nuevo cambio
+
     uint32_t pwmClock = SysCtlClockGet() / 64;
     uint32_t load = (pwmClock / PWM_FREQ) - 1;
     uint32_t duty = (load * 30) / 100; // 30%
@@ -109,12 +118,20 @@ int main(void) {
         uint32_t distancia = medirDistancia();
         UARTprintf("Distancia: %d cm\n", distancia);
 
+
+        //inicio del cambio
+
         if (distancia <= 3) {
             Motor_Stop();
+            GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, GPIO_PIN_1); // LED ON
         } else {
             Motor1_Forward(duty);
             Motor2_Forward(duty);
+            GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0);          // LED OFF
         }
+        ///final del cambio
+
+
 
         SysCtlDelay(SysCtlClockGet() / 100); // Delay corto (~10ms)
     }
